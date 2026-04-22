@@ -11,8 +11,8 @@ import java.util.Map;
 
 public interface UserService {
     public UserDto registerUser(CreateUserRequestDto createUserRequestDto);
-    public UserDto loginUser(LoginUserRequestDto loginUserRequestDto);
-    public UserDto findUser(Long userId);
-    public void deleteUser(Long UserId);
-    public UserDto partialUpdateUser(Long userId, Map<String,Object> updates);
+    public String loginUser(LoginUserRequestDto loginUserRequestDto);
+    public UserDto findUser();
+    public void deleteUser();
+    public UserDto partialUpdateUser( Map<String,Object> updates);
 }

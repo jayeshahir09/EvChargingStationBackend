@@ -20,9 +20,9 @@ import java.util.List;
 public class BookingController {
     private final BookingService bookingService;
 
-    @PostMapping("/{userId}")
-    public ResponseEntity<BookingDto> doBook(@RequestBody CreateBookingRequest createBookingRequest, @PathVariable Long userId){
-        return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.doBook(createBookingRequest,userId));
+    @PostMapping("/book")
+    public ResponseEntity<BookingDto> doBook(@RequestBody CreateBookingRequest createBookingRequest){
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.doBook(createBookingRequest));
     }
 
     @DeleteMapping("/{bookingId}")
@@ -35,13 +35,13 @@ public class BookingController {
     public ResponseEntity<BookingDto> cancelBooking(@PathVariable Long bookingId){
         return ResponseEntity.ok(bookingService.cancelBooking(bookingId));
     }
-    @GetMapping("/{userId}")
-    public ResponseEntity<Page<BookingDto>> getBookings(@PathVariable Long userId, @RequestParam(defaultValue = "0")int page, @RequestParam(defaultValue = "6") int size){
-        return ResponseEntity.ok(bookingService.getBookings(userId,page,size));
+    @GetMapping("")
+    public ResponseEntity<Page<BookingDto>> getBookings(@RequestParam(defaultValue = "0")int page, @RequestParam(defaultValue = "6") int size){
+        return ResponseEntity.ok(bookingService.getBookings(page,size));
     }
 
-    @GetMapping("/{userId}/allBooking")
-    public ResponseEntity<List<BookingDto>> getAllBooking(@PathVariable Long userId){
-        return ResponseEntity.ok(bookingService.getAllBookings(userId));
+    @GetMapping("/allBooking")
+    public ResponseEntity<List<BookingDto>> getAllBooking(){
+        return ResponseEntity.ok(bookingService.getAllBookings());
     }
 }

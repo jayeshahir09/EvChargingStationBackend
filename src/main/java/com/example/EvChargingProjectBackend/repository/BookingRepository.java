@@ -1,6 +1,7 @@
 package com.example.EvChargingProjectBackend.repository;
 
 import com.example.EvChargingProjectBackend.entity.Booking;
+import com.example.EvChargingProjectBackend.entity.Slot;
 import com.example.EvChargingProjectBackend.entity.type.BookingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +14,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking,Long> {
-    Page<Booking> findAllBookingByUserUserId(Long userId, Pageable pageable);
+    @Query("""
+            SELECT b FROM Booking b 
+            WHERE b.user.email=:email
+            ORDER BY b.slot.startTime DESC
+            """)
+    Page<Booking> findAllBookingByEmail(String email, Pageable pageable);
+
     @Query("SELECT b FROM Booking b WHERE b.user.userId =:userId " +
             "ORDER BY b.slot.startTime DESC")
     List<Booking> findAllBookings(@Param("userId")Long UserId);
@@ -33,7 +40,12 @@ public interface BookingRepository extends JpaRepository<Booking,Long> {
     """)
     List<Booking> findBookingsToComplete(@Param("now")LocalDateTime now);
 
-    Optional<List<Booking>> findAllBookingByUserUserId(Long userId);
+    @Query("""
+            SELECT b FROM Booking b 
+            WHERE b.user.email=:email
+            ORDER BY b.slot.startTime DESC
+            """)
+    Optional<List<Booking>> findAllBookingByEmail(String email);
 
     @Query("""
 SELECT b FROM Booking b
@@ -42,8 +54,10 @@ AND b.slot.startTime BETWEEN :start AND :end
 """)
     List<Booking> findBookingsStartingBetween(
             LocalDateTime start,
-            LocalDateTime end,
+            LocalDateTime end,  
             BookingStatus status
     );
+
+    Optional<Slot> findAllBookingByUserEmail(String email);
 
 }

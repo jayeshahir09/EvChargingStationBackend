@@ -16,9 +16,9 @@ import java.util.List;
 public class NotificationController {
     private final NotificationService notificationService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<NotificationDto>> getUserNotifications(@PathVariable Long userId) {
-        return ResponseEntity.ok(notificationService.getUserNotifications(userId));
+    @GetMapping("/")
+    public ResponseEntity<List<NotificationDto>> getUserNotifications() {
+        return ResponseEntity.ok(notificationService.getUserNotifications());
     }
 
     @PatchMapping("/{notificationId}/read")

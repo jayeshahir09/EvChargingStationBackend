@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.service.annotation.GetExchange;
 
 import java.util.List;
 
@@ -14,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class StationOwner {
+public class StationOwner implements AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long stationOwnerId;
@@ -24,8 +23,13 @@ public class StationOwner {
     private String mobileNumber;
     @Column(nullable = false,length = 50)
     private String name;
-    @Column(nullable = false,length=15)
+    @Column(nullable = false)
     private String password;
+
+    @Override
+    public String getRole(){
+        return "OWNER";
+    }
     @OneToMany(mappedBy = "stationOwner", orphanRemoval = true,cascade = CascadeType.ALL)
     private List<ChargingStation> chargingStationList;
 }

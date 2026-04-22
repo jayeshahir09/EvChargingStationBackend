@@ -12,6 +12,7 @@ import com.example.EvChargingProjectBackend.repository.StationOwnerRepository;
 import com.example.EvChargingProjectBackend.service.StationOwnerService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Service;
 public class StationOwnerServiceimp implements StationOwnerService {
     private final StationOwnerRepository stationOwnerRepository;
     private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
+
     public StationOwnerDto registerOwner(CreateOwnerRequestDto createOwnerRequestDto){
         if(stationOwnerRepository.existsByEmail(createOwnerRequestDto.getEmail())){
             throw new IllegalArgumentException("Email already exist");
@@ -27,6 +30,7 @@ public class StationOwnerServiceimp implements StationOwnerService {
             throw new IllegalArgumentException("Mobile Number already exist");
         }
         StationOwner stationOwner = modelMapper.map(createOwnerRequestDto,StationOwner.class);
+        stationOwner.setPassword(passwordEncoder.encode(stationOwner.getPassword()));
         StationOwner newOwner = stationOwnerRepository.save(stationOwner);
         StationOwnerDto ownerDto = modelMapper.map(newOwner,StationOwnerDto.class);
         return ownerDto;
@@ -36,7 +40,7 @@ public class StationOwnerServiceimp implements StationOwnerService {
 
         StationOwner stationOwner= stationOwnerRepository.findByEmail(loginOwnerRequestDto.getEmail()).orElseThrow(()->new IllegalArgumentException("email is not registered"));
 
-        if(!stationOwner.getPassword().equals(loginOwnerRequestDto.getPassword())){
+        if(!passwordEncoder.matches(loginOwnerRequestDto.getPassword(), stationOwner.getPassword())){
             throw new IllegalArgumentException("password did not match");
         }
 

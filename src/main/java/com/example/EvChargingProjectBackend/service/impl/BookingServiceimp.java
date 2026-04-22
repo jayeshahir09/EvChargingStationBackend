@@ -14,10 +14,15 @@ import com.example.EvChargingProjectBackend.repository.UserRepository;
 import com.example.EvChargingProjectBackend.service.BookingService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -33,20 +38,25 @@ public class BookingServiceimp implements BookingService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
-    public Page<BookingDto> getBookings(Long userId, int page, int size){
+    public Page<BookingDto> getBookings(int page, int size){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
         Pageable pageable = PageRequest.of(page,size);
-        Page<Booking> bookings = bookingRepository.findAllBookingByUserUserId(userId,pageable);
+        Page<Booking> bookings = bookingRepository.findAllBookingByEmail(email,pageable);
         return bookings.map((booking)->modelMapper.map(booking,BookingDto.class));
     }
 
     @Transactional
-    public BookingDto doBook(CreateBookingRequest createBookingRequest, Long userId){
+    public BookingDto doBook(CreateBookingRequest createBookingRequest){
         SlotDto slotDto = createBookingRequest.getSlotDto();
         Long slotId = slotDto.getSlotId();
         Slot slot=slotRepository.findById(slotId).orElseThrow(()->new IllegalArgumentException("slot is not valid"));
-
+        
 //        Slot slot = slotRepository.findById(slotId).orElseThrow(()->new IllegalArgumentException("slot not found with this id"+slotId));
-        User user = userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("user not found with this id "+userId));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email).orElseThrow(()->new IllegalArgumentException("user not found"));
         if(slot.getSlotStatus()==SlotStatus.BOOKED){
             throw new IllegalArgumentException("this slot is already Booked");
         }
@@ -93,8 +103,10 @@ public class BookingServiceimp implements BookingService {
         bookingRepository.delete(booking);
     }
 
-    public List<BookingDto> getAllBookings(Long userId){
-        List<Booking> bookings = bookingRepository.findAllBookingByUserUserId(userId).orElseThrow(()-> new IllegalArgumentException("no Bookings wiht this user"));
+    public List<BookingDto> getAllBookings(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        List<Booking> bookings = bookingRepository.findAllBookingByEmail(email).orElseThrow(()-> new IllegalArgumentException("no Bookings wiht this user"));
         List<BookingDto> bookingDtos = new ArrayList<>();
         for(Booking booking:bookings){
             Charger charger=booking.getCharger();

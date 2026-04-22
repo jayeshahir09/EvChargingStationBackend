@@ -33,12 +33,11 @@ public class StationOwnerController {
         return ResponseEntity.ok(stationOwnerService.loginOwner(loginOwnerRequestDto));
     }
 
-    @GetMapping("/{stationOwnerId}")
+    @GetMapping("/")
     public ResponseEntity<Page<ChargingStationDto>> getAllChargingStation(
-            @PathVariable Long stationOwnerId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size){
-        return ResponseEntity.ok(chargingStationService.getAllChargingStation(stationOwnerId,page,size));
+        return ResponseEntity.ok(chargingStationService.getAllChargingStation(page,size));
     }
 
 

@@ -3,6 +3,7 @@ package com.example.EvChargingProjectBackend.controller;
 import com.example.EvChargingProjectBackend.dto.ChargingStationDto;
 
 import com.example.EvChargingProjectBackend.dto.NearByStationDto;
+import com.example.EvChargingProjectBackend.dto.StationFilterDto;
 import com.example.EvChargingProjectBackend.dto.StationOwnerDto;
 import com.example.EvChargingProjectBackend.dto.request.CreateChargingStationDto;
 import com.example.EvChargingProjectBackend.service.ChargingStationService;
@@ -32,8 +33,6 @@ public class ChargingStationController {
             @PathVariable Long stationOwnerId){
         return ResponseEntity.status(HttpStatus.CREATED).body(chargingStationService.addChargingStation(stationOwnerId,createChargingStationDto));
     }
-//    @PutMapping("/{}")
-//    public ResponseEntity
 
     @PatchMapping("/{stationId}")
     public ResponseEntity<ChargingStationDto> changeChargingStationDetails(@PathVariable Long stationId,
@@ -41,14 +40,14 @@ public class ChargingStationController {
         return ResponseEntity.ok(chargingStationService.partialUpdateChargingStationDetails(stationId,updates));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Page<NearByStationDto>> searchChargingStation(
-            @RequestParam String words,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "6") int size){
-
-        return ResponseEntity.ok(chargingStationService.searchChargingStation(words,page,size));
-    }
+//    @GetMapping("/search")
+//    public ResponseEntity<Page<NearByStationDto>> searchChargingStation(
+//            @RequestParam String words,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "6") int size){
+//
+//        return ResponseEntity.ok(chargingStationService.searchChargingStation(words,page,size));
+//    }
 
     @DeleteMapping("/{stationId}")
     public ResponseEntity<String> deleteChargingStation(@PathVariable Long stationId){
@@ -56,13 +55,22 @@ public class ChargingStationController {
         return ResponseEntity.ok("Charging Station is deleted Successfully");
     }
 
-    @GetMapping("/{userId}/nearMe")
-    public ResponseEntity<Page<NearByStationDto>> findNearChargingStation(
-            @PathVariable Long userId,
-            @RequestParam Double latitude,
-            @RequestParam Double longitude,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "6") int size){
-        return ResponseEntity.ok(chargingStationService.findNearChargingStation(userId,latitude,longitude,page,size));
+//    @GetMapping("/{userId}/nearMe")
+//    public ResponseEntity<Page<NearByStationDto>> findNearChargingStation(
+//            @PathVariable Long userId,
+//            @RequestParam Double latitude,
+//            @RequestParam Double longitude,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "6") int size){
+//        return ResponseEntity.ok(chargingStationService.findNearChargingStation(userId,latitude,longitude,page,size));
+//    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<Page<NearByStationDto>> filterStation(
+            @ModelAttribute StationFilterDto stationFilterDto,
+            @RequestParam(defaultValue = "4") int size,
+            @RequestParam(defaultValue = "0") int page){
+        return ResponseEntity.ok(chargingStationService.filterStation(stationFilterDto,page,size));
     }
+
 }

@@ -15,7 +15,7 @@ public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bookingId;
-    private Double cost ;
+    private Double cost;
     @Enumerated(value = EnumType.STRING)
     private BookingStatus bookingStatus;
     @OneToOne

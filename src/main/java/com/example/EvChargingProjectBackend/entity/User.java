@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 @Builder
 @Table(name = "user_table")
-public class User {
+public class User implements AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
@@ -22,11 +22,14 @@ public class User {
     private String mobileNumber;
     @Column(nullable = false,unique = true)
     private String email;
-    @Column(nullable = false,length=15)
+    @Column(nullable = false)
     private String password;
 
-    private Double latitude;
-    private Double longitude;
+    @Override
+    public String getRole(){
+        return "USER";
+    }
+
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Booking> bookingList;
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true)

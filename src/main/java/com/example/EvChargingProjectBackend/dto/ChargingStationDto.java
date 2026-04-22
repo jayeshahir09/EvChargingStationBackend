@@ -1,6 +1,6 @@
 package com.example.EvChargingProjectBackend.dto;
 
-import com.example.EvChargingProjectBackend.entity.Charger;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

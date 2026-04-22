@@ -28,32 +28,23 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDto> login(@Valid @RequestBody LoginUserRequestDto loginUserRequestDto){
+    public ResponseEntity<String> login(@Valid @RequestBody LoginUserRequestDto loginUserRequestDto){
         return ResponseEntity.ok(userService.loginUser(loginUserRequestDto));
     }
 
-
-
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long userId){
-        userService.deleteUser(userId);
+    @DeleteMapping("/")
+    public ResponseEntity<String> deleteUser(){
+        userService.deleteUser();
         return ResponseEntity.ok("user deleted suceesfully");
     }
 
-
-
-//    @GetMapping("/filter")
-//    public ResponseEntity<Page<ChargingStationDto>> filterChargingStation()
-
-
-
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserDto> findUser(@PathVariable Long userId){
-        return ResponseEntity.ok(userService.findUser(userId));
+    @GetMapping("/profile")
+    public ResponseEntity<UserDto> findUser(){
+        return ResponseEntity.ok(userService.findUser());
     }
 
-    @PatchMapping("/{userId}")  
-    public ResponseEntity<UserDto> partialUpdateUser(@PathVariable Long userId, @RequestBody Map<String,Object> updates){
-        return ResponseEntity.ok(userService.partialUpdateUser(userId,updates));
+    @PatchMapping("")  
+    public ResponseEntity<UserDto> partialUpdateUser( @RequestBody Map<String,Object> updates){
+        return ResponseEntity.ok(userService.partialUpdateUser(updates));
     }
 }

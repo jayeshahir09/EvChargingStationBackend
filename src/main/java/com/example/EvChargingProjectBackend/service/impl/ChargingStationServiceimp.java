@@ -1,24 +1,27 @@
 package com.example.EvChargingProjectBackend.service.impl;
 
-import com.example.EvChargingProjectBackend.dto.ChargerDto;
-import com.example.EvChargingProjectBackend.dto.ChargingStationDto;
-import com.example.EvChargingProjectBackend.dto.NearByStationDto;
-import com.example.EvChargingProjectBackend.dto.NearbyStation;
+import com.example.EvChargingProjectBackend.dto.*;
 import com.example.EvChargingProjectBackend.dto.request.CreateChargingStationDto;
 import com.example.EvChargingProjectBackend.entity.Charger;
 import com.example.EvChargingProjectBackend.entity.ChargingStation;
 import com.example.EvChargingProjectBackend.entity.StationOwner;
 import com.example.EvChargingProjectBackend.entity.User;
+import com.example.EvChargingProjectBackend.entity.type.ChargerType;
+import com.example.EvChargingProjectBackend.entity.type.ConnectorType;
 import com.example.EvChargingProjectBackend.repository.ChargerRepository;
 import com.example.EvChargingProjectBackend.repository.ChargingStationRepository;
 import com.example.EvChargingProjectBackend.repository.StationOwnerRepository;
 import com.example.EvChargingProjectBackend.repository.UserRepository;
 import com.example.EvChargingProjectBackend.service.ChargingStationService;
+import com.example.EvChargingProjectBackend.specification.ChargingStationSpecification;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -81,9 +84,12 @@ public class ChargingStationServiceimp implements ChargingStationService {
         chargingStationRepository.delete(chargingStation);
     }
 
-    public Page<ChargingStationDto> getAllChargingStation(Long ownerId,int page,int size){
+    public Page<ChargingStationDto> getAllChargingStation(int page,int size){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email).orElseThrow(()->new IllegalArgumentException("user not found"));
         Pageable pageable = PageRequest.of(page,size);
-        Page<ChargingStation> chargingStations = chargingStationRepository.findAllStationByOwnerId(ownerId,pageable);
+        Page<ChargingStation> chargingStations = chargingStationRepository.findAllStationByEmail(email,pageable);
         return chargingStations.map((chargingStation)->modelMapper.map(chargingStation,ChargingStationDto.class));
     }
 
@@ -105,35 +111,92 @@ public class ChargingStationServiceimp implements ChargingStationService {
         });
     }
 
-    public Page<NearByStationDto> findNearChargingStation(
-            Long userId,
-            Double userLat,
-            Double userLng,
-            int page,
-            int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size);
+//    public Page<NearByStationDto> findNearChargingStation(
+//            Long userId,
+//            Double userLat,
+//            Double userLng,
+//            int page,
+//            int size
+//    ) {
+//        Pageable pageable = PageRequest.of(page, size);
+//
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new IllegalArgumentException(
+//                        "user not found with this id " + userId));
+//
+//        user.setLatitude(userLat);
+//        user.setLongitude(userLng);
+//
+//        Page<NearbyStation> stations =
+//                chargingStationRepository.findNearChargingStation(userLat, userLng, pageable);
+//
+//        // 🔥 MAP Page<NearbyStation> → Page<NearByStationDto>
+//        return stations.map(station -> {
+//            ChargingStation chargingStation = station.getStation();
+//            double distance = station.getDistanceKm();
+//            List<Charger> chargers = chargerRepository.findAllByChargingStationStationId(chargingStation.getStationId());
+//
+//            List<ChargerType> chargerTypes =
+//                    chargers.stream()
+//                            .map(Charger::getChargerType)
+//                            .distinct()
+//                            .toList();
+//
+//            List<ConnectorType> connectorTypes =
+//                    chargers.stream()
+//                            .map(charger -> charger.getConnectorType())
+//                            .distinct()
+//                            .toList();
+//
+//            ChargingStationDto stationDto =
+//                    modelMapper.map(chargingStation, ChargingStationDto.class);
+//
+//            return new NearByStationDto(stationDto, distance,chargerTypes,connectorTypes);
+//        });
+//    }
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "user not found with this id " + userId));
+    public Page<NearByStationDto> filterStation(StationFilterDto stationFilterDto,int page,int size){
+        Pageable pageable = PageRequest.of(page,size);
 
-        user.setLatitude(userLat);
-        user.setLongitude(userLng);
+        Specification<ChargingStation> spec = Specification.where(ChargingStationSpecification.search(stationFilterDto.getWords())).
+                and(ChargingStationSpecification.chargerType(stationFilterDto.getChargerType())).
+                and(ChargingStationSpecification.connectorType(stationFilterDto.getConnectorType())).
+                and(ChargingStationSpecification.city(stationFilterDto.getCity())); 
 
-        Page<NearbyStation> stations =
-                chargingStationRepository.findNearChargingStation(userLat, userLng, pageable);
+        Page<ChargingStation> stations = chargingStationRepository.findAll(spec,pageable);
+        return stations.map(station->{
+            ChargingStationDto stationDto = modelMapper.map(station,ChargingStationDto.class);
+            List<Charger> chargers = chargerRepository.findAllByChargingStationStationId(station.getStationId());
 
-        // 🔥 MAP Page<NearbyStation> → Page<NearByStationDto>
-        return stations.map(station -> {
-            ChargingStation chargingStation = station.getStation();
-            double distance = station.getDistanceKm();
+            List<ChargerType> chargerTypes =
+                    chargers.stream()
+                            .map(Charger::getChargerType)
+                            .distinct()
+                            .toList();
 
-            ChargingStationDto stationDto =
-                    modelMapper.map(chargingStation, ChargingStationDto.class);
-
-            return new NearByStationDto(stationDto, distance);
+            List<ConnectorType> connectorTypes =
+                    chargers.stream()
+                            .map(charger -> charger.getConnectorType())
+                            .distinct()
+                            .toList();
+            return NearByStationDto.builder().
+                    stationDto(stationDto).
+                    distanceKm(0).
+                    chargerTypes(chargerTypes).
+                    connectorTypes(connectorTypes).
+                    build();
         });
+
     }
+
+//    public Page<ChargingStationDto> filterStation(StationFilterDto stationFilterDto,int page,int size){
+//        Pageable pageable = PageRequest.of(page,size);
+//        Specification<ChargingStation> spec = Specification.where(null);
+//        if(stationFilterDto.getConnectorType()!=null){
+//            spec = spec.and(hasConnectorType(stationFilterDto.getConnectorType()));
+//
+//        }
+//        return ;
+//    }
 
 }

@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ChargerRepository extends JpaRepository<Charger,Long> {
-    public List<Charger> findChargerByChargingStationStationId(Long chargingStationId);
+    List<Charger> findChargerByChargingStationStationId(Long chargingStationId);
 
     List<Charger> findAllByChargingStationStationId(Long chargingStationStationId);
 }

@@ -5,12 +5,14 @@ import com.example.EvChargingProjectBackend.entity.ChargingStation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ChargingStationRepository extends JpaRepository<ChargingStation,Long> {
-    @Query("SELECT s FROM ChargingStation s WHERE s.stationOwner.stationOwnerId = :ownerId")
-    Page<ChargingStation> findAllStationByOwnerId(@Param("ownerId") Long ownerId, Pageable pageable);
+public interface ChargingStationRepository extends JpaRepository<ChargingStation,Long>,
+        JpaSpecificationExecutor<ChargingStation> {
+    @Query("SELECT s FROM ChargingStation s WHERE s.stationOwner.email = :email")
+    Page<ChargingStation> findAllStationByEmail(@Param("email") String email, Pageable pageable);
 
     @Query("""
 SELECT s FROM ChargingStation s WHERE LOWER(s.stationName) LIKE LOWER(CONCAT('%',:words,'%'))
@@ -38,4 +40,19 @@ ORDER BY
 """)
     Page<NearbyStation> findNearChargingStation(@Param("lat") Double lat, @Param("lng") Double lng, Pageable pageable);
 
+//    @Query("select c from charging_station c WHERE LOWER(c.connector_type) = LOWER(:connectorType) " +
+//            "AND LOWER(c.charger_type) = LOWER(:chargerType) " +
+//            "AND (6371 * acos(\n" +
+//            "        cos(radians(:lat)) * cos(radians(s.latitude)) *\n" +
+//            "        cos(radians(s.longitude) - radians(:lng)) +\n" +
+//            "        sin(radians(:lat)) * sin(radians(s.latitude))\n" +
+//            "    ))\n" +
+//            ") " )
+//    Page<ChargingStation> filterConnectorTypeChargerTypeAndDistance(
+//            @Param("connectorType")String connectorType,
+//            @Param("chargerType")String chargerType,
+//            @Param("distance") Integer distance,
+//            @Param("lat") Double lat,
+//            @Param("lng") Double lng,
+//            Pageable pageable);
 }
